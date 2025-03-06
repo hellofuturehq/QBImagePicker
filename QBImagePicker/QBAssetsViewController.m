@@ -105,12 +105,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     // Scroll to bottom
     if (self.fetchResult.count > 0 && self.isMovingToParentViewController && !self.disableScrollToBottom) {
-        // when presenting as a .FormSheet on iPad, the frame is not correct until just after viewWillAppear:
-        // dispatching to the main thread waits one run loop until the frame is update and the layout is complete
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
-            [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
-        });
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
     }
 }
 
@@ -159,6 +155,10 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     [self updateFetchRequest];
     [self.collectionView reloadData];
+    [self.collectionView performBatchUpdates:^{} completion: ^(BOOL finished) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
+    }];
 }
 
 - (PHCachingImageManager *)imageManager
@@ -322,7 +322,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         NSArray *assetsToStopCaching = [self assetsAtIndexPaths:removedIndexPaths];
         
         CGSize itemSize = [(UICollectionViewFlowLayout *)self.collectionViewLayout itemSize];
-        CGSize targetSize = CGSizeScale(itemSize, [[UIScreen mainScreen] scale]);
+        CGSize targetSize = CGSizeScale(itemSize, self.traitCollection.displayScale);
         
         [self.imageManager startCachingImagesForAssets:assetsToStartCaching
                                             targetSize:targetSize
@@ -451,7 +451,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Image
     PHAsset *asset = self.fetchResult[indexPath.item];
     CGSize itemSize = [(UICollectionViewFlowLayout *)collectionView.collectionViewLayout itemSize];
-    CGSize targetSize = CGSizeScale(itemSize, [[UIScreen mainScreen] scale]);
+    CGSize targetSize = CGSizeScale(itemSize, self.traitCollection.displayScale);
     
     [self.imageManager requestImageForAsset:asset
                                  targetSize:targetSize
@@ -662,3 +662,4 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 @end
+

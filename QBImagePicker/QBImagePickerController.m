@@ -33,7 +33,8 @@
                                          @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
                                          @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
                                          @(PHAssetCollectionSubtypeSmartAlbumVideos),
-                                         @(PHAssetCollectionSubtypeSmartAlbumBursts)
+                                         @(PHAssetCollectionSubtypeSmartAlbumBursts),
+                                         @(PHAssetCollectionSubtypeAlbumCloudShared)
                                          ];
         self.minimumNumberOfSelection = 1;
         self.numberOfColumnsInPortrait = 4;
@@ -75,3 +76,4 @@
 }
 
 @end
+
