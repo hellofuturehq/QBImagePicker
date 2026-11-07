@@ -414,6 +414,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                 // reloaded in a separate update. Reloading them in the same batch makes UIKit throw
                 // "attempt to delete and reload the same index path" when an index is both removed and changed.
                 NSMutableIndexSet *changedIndexes = [[collectionChanges changedIndexes] mutableCopy];
+                // Defensively drop any index past the new count; UIKit throws on out-of-range reloads.
                 [changedIndexes removeIndexesInRange:NSMakeRange(self.fetchResult.count, NSNotFound - self.fetchResult.count)];
                 if ([changedIndexes count]) {
                     [self.collectionView performBatchUpdates:^{
