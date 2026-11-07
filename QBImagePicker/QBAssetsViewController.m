@@ -408,12 +408,18 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                     if ([insertedIndexes count]) {
                         [self.collectionView insertItemsAtIndexPaths:[insertedIndexes qb_indexPathsFromIndexesWithSection:0]];
                     }
-                    
-                    NSIndexSet *changedIndexes = [collectionChanges changedIndexes];
-                    if ([changedIndexes count]) {
-                        [self.collectionView reloadItemsAtIndexPaths:[changedIndexes qb_indexPathsFromIndexesWithSection:0]];
-                    }
                 } completion:NULL];
+                
+                // changedIndexes refer to the state after the removals and insertions, so they must be
+                // reloaded in a separate update. Reloading them in the same batch makes UIKit throw
+                // "attempt to delete and reload the same index path" when an index is both removed and changed.
+                NSMutableIndexSet *changedIndexes = [[collectionChanges changedIndexes] mutableCopy];
+                [changedIndexes removeIndexesInRange:NSMakeRange(self.fetchResult.count, NSNotFound - self.fetchResult.count)];
+                if ([changedIndexes count]) {
+                    [self.collectionView performBatchUpdates:^{
+                        [self.collectionView reloadItemsAtIndexPaths:[changedIndexes qb_indexPathsFromIndexesWithSection:0]];
+                    } completion:NULL];
+                }
             }
             
             [self resetCachedAssets];
